@@ -35,12 +35,16 @@ begin
     end if;
 
     if falling_edge(Clock) then
-	-- Add code to write data to RAM
-	-- Use to_integer(unsigned(Address)) to index the i_ram array
-	
+	if (WE = '1' and (to_integer(unsigned(Address))) >= 0 and (to_integer(unsigned(Address))) <= 127) then
+		i_ram((to_integer(unsigned(Address)))) <= DataIn;
+	end if;
     end if;
 
-	-- Rest of the RAM implementation
+    if (OE = '1' and (to_integer(unsigned(Address))) >= 0 and (to_integer(unsigned(Address))) <= 127) then
+	DataOut <= i_ram((to_integer(unsigned(Address))));
+    else
+	DataOut <= ( others => 'Z' );
+    end if;
 
   end process RamProc;
 
@@ -70,10 +74,157 @@ architecture remember of Registers is
 		 writein32, writein16, writein8: in std_logic;
 		 dataout: out std_logic_vector(31 downto 0));
 	end component;
-	
-begin
-    -- Add your code here for the Register Bank implementation
 
+	signal dataIn: std_logic_vector(31 downto 0);
+	signal dataOut1: std_logic_vector(31 downto 0);
+	signal dataOut2: std_logic_vector(31 downto 0);
+	signal dataOut3: std_logic_vector(31 downto 0);
+	signal dataOut4: std_logic_vector(31 downto 0);
+	signal dataOut5: std_logic_vector(31 downto 0);
+	signal dataOut6: std_logic_vector(31 downto 0);
+	signal dataOut7: std_logic_vector(31 downto 0);
+	signal dataOut8: std_logic_vector(31 downto 0);
+
+	signal writeto: std_logic_vector(7 downto 0);
+begin
+    register1: register32 PORT MAP (
+		WriteData,
+		'0',
+		'0',
+		'0',
+		writeto(0),
+		'0',
+		'0',
+		dataOut1
+		);
+
+    register2: register32 PORT MAP (
+		WriteData,
+		'0',
+		'0',
+		'0',
+		writeto(1),
+		'0',
+		'0',
+		dataOut2
+		);
+
+    register3: register32 PORT MAP (
+		WriteData,
+		'0',
+		'0',
+		'0',
+		writeto(2),
+		'0',
+		'0',
+		dataOut3
+		);
+
+    register4: register32 PORT MAP (
+		WriteData,
+		'0',
+		'0',
+		'0',
+		writeto(3),
+		'0',
+		'0',
+		dataOut4
+		);
+
+    register5: register32 PORT MAP (
+		WriteData,
+		'0',
+		'0',
+		'0',
+		writeto(4),
+		'0',
+		'0',
+		dataOut5
+		);
+
+    register6: register32 PORT MAP (
+		WriteData,
+		'0',
+		'0',
+		'0',
+		writeto(5),
+		'0',
+		'0',
+		dataOut6
+		);
+
+    register7: register32 PORT MAP (
+		WriteData,
+		'0',
+		'0',
+		'0',
+		writeto(6),
+		'0',
+		'0',
+		dataOut7
+		);
+
+    register8: register32 PORT MAP (
+		WriteData,
+		'0',
+		'0',
+		'0',
+		writeto(7),
+		'0',
+		'0',
+		dataOut8
+		);
+
+	with ReadReg1 select
+		ReadData1 <= dataOut1 when "01010",
+			     dataOut2 when "01011",
+			     dataOut3 when "01100",
+			     dataOut4 when "01101",
+			     dataOut5 when "01110",
+			     dataOut6 when "01111",
+			     dataOut7 when "10000",
+			     dataOut8 when "10001",
+			     (others => '0') when "00000",
+			     (others => 'Z') when others;
+
+	with ReadReg2 select
+		ReadData2 <= dataOut1 when "01010",
+			     dataOut2 when "01011",
+			     dataOut3 when "01100",
+			     dataOut4 when "01101",
+			     dataOut5 when "01110",
+			     dataOut6 when "01111",
+			     dataOut7 when "10000",
+			     dataOut8 when "10001",
+			     (others => '0') when "00000",
+			     (others => 'Z') when others;
+
+	process (WriteCmd) is
+	begin
+		if (WriteCmd='1') then
+
+			case WriteReg is
+				when "01010" =>
+					writeto <= "00000001";
+				when "01011" =>
+					writeto <= "00000010";
+				when "01100" =>
+					writeto <= "00000100";
+				when "01101" =>
+					writeto <= "00001000";
+				when "01110" =>
+					writeto <= "00010000";
+				when "01111" =>
+					writeto <= "00100000";
+				when "10000" =>
+					writeto <= "01000000";
+				when "10001" =>
+					writeto <= "10000000";
+				when others =>
+					writeto <= "00000000";
+			end case;
+		end if;
+	end process;
 end remember;
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
