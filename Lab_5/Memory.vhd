@@ -85,93 +85,53 @@ architecture remember of Registers is
 	signal dataOut7: std_logic_vector(31 downto 0);
 	signal dataOut8: std_logic_vector(31 downto 0);
 
-	signal writeto: std_logic_vector(7 downto 0);
+	signal writeout: std_logic_vector(7 downto 0);
 begin
     register1: register32 PORT MAP (
-		WriteData,
-		'0',
-		'0',
-		'0',
-		writeto(0),
-		'0',
-		'0',
+		WriteData, '0', '0', '0',
+		writeout(0), '0', '0',
 		dataOut1
 		);
 
     register2: register32 PORT MAP (
-		WriteData,
-		'0',
-		'0',
-		'0',
-		writeto(1),
-		'0',
-		'0',
+		WriteData, '0', '0', '0',
+		writeout(1), '0', '0',
 		dataOut2
 		);
 
     register3: register32 PORT MAP (
-		WriteData,
-		'0',
-		'0',
-		'0',
-		writeto(2),
-		'0',
-		'0',
+		WriteData, '0', '0', '0',
+		writeout(2), '0', '0',
 		dataOut3
 		);
 
     register4: register32 PORT MAP (
-		WriteData,
-		'0',
-		'0',
-		'0',
-		writeto(3),
-		'0',
-		'0',
+		WriteData, '0', '0', '0',
+		writeout(3), '0', '0',
 		dataOut4
 		);
 
     register5: register32 PORT MAP (
-		WriteData,
-		'0',
-		'0',
-		'0',
-		writeto(4),
-		'0',
-		'0',
+		WriteData, '0', '0', '0',
+		writeout(4), '0', '0',
 		dataOut5
 		);
 
     register6: register32 PORT MAP (
-		WriteData,
-		'0',
-		'0',
-		'0',
-		writeto(5),
-		'0',
-		'0',
+		WriteData, '0', '0', '0',
+		writeout(5), '0', '0',
 		dataOut6
 		);
 
     register7: register32 PORT MAP (
-		WriteData,
-		'0',
-		'0',
-		'0',
-		writeto(6),
-		'0',
-		'0',
+		WriteData, '0', '0', '0',
+		writeout(6), '0', '0',
 		dataOut7
 		);
 
     register8: register32 PORT MAP (
-		WriteData,
-		'0',
-		'0',
-		'0',
-		writeto(7),
-		'0',
-		'0',
+		WriteData, '0', '0', '0',
+		writeout(7), '0', '0',
 		dataOut8
 		);
 
@@ -205,23 +165,23 @@ begin
 
 			case WriteReg is
 				when "01010" =>
-					writeto <= "00000001";
+					writeout <= "00000001";
 				when "01011" =>
-					writeto <= "00000010";
+					writeout <= "00000010";
 				when "01100" =>
-					writeto <= "00000100";
+					writeout <= "00000100";
 				when "01101" =>
-					writeto <= "00001000";
+					writeout <= "00001000";
 				when "01110" =>
-					writeto <= "00010000";
+					writeout <= "00010000";
 				when "01111" =>
-					writeto <= "00100000";
+					writeout <= "00100000";
 				when "10000" =>
-					writeto <= "01000000";
+					writeout <= "01000000";
 				when "10001" =>
-					writeto <= "10000000";
+					writeout <= "10000000";
 				when others =>
-					writeto <= "00000000";
+					writeout <= "00000000";
 			end case;
 		end if;
 	end process;
