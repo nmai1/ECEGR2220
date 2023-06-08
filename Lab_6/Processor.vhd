@@ -1,8 +1,3 @@
---------------------------------------------------------------------------------
---
--- LAB #6 - Processor 
---
---------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_ARITH.ALL;
@@ -10,7 +5,7 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 entity Processor is
     Port ( reset : in  std_logic;
-	   clock : in  std_logic);
+	       clock : in  std_logic);
 end Processor;
 
 architecture holistic of Processor is
@@ -75,7 +70,7 @@ architecture holistic of Processor is
 		 Clock: in std_logic;
 		 PCin: in std_logic_vector(31 downto 0);
 		 PCout: out std_logic_vector(31 downto 0));
-	end component;
+	end component ProgramCounter;
 
 	component adder_subtracter
 		port(	datain_a: in std_logic_vector(31 downto 0);
@@ -85,7 +80,88 @@ architecture holistic of Processor is
 			co: out std_logic);
 	end component adder_subtracter;
 
+signal  PCout : std_logic_vector(31 downto 0);
+signal  PCAdderOut : std_logic_vector(31 downto 0); 
+signal  PCAddco : std_logic;  
+signal  BNEout: std_logic; 
+signal  BranchAddOut: std_logic_vector(31 downto 0);
+signal  BranchAddCarry: std_logic;
+signal  PcMuxOut : std_logic_vector(31 downto 0);  
+signal ImmGenOut : std_logic_vector(31 downto 0);  
+signal IMtoImmGen : std_logic_vector(31 downto 0);
+signal IMOUT : std_logic_vector(31 downto 0);
+signal RegDat1 : std_logic_vector(31 downto 0); 
+signal RegDat2 : std_logic_vector(31 downto 0);  
+signal Mux2ALU : std_logic_vector(31 downto 0); 
+signal ALUOut  : std_logic_vector(31 downto 0); 
+signal ALUzero : std_logic;  
+signal MemReadOut : std_logic_vector(31 downto 0);
+signal MeMuxOut   : std_logic_vector(31 downto 0);
+signal Acct30bit  : std_logic_vector(29 downto 0);
+signal BranchCTRL   : std_logic_vector(1 downto 0);
+signal MemReadCTRL  : std_logic;
+signal MemToRegCTRL : std_logic;
+signal ALUCTRLCTRL  : std_logic_vector(4 downto 0);
+signal MemWriteCTRL : std_logic;
+signal ALUSrcCTRL   : std_logic;
+signal RegWriteCTRL : std_logic;
+signal ImmGenCTRL   : std_logic_vector(1 downto 0);
+
 begin
-	-- Add your code here
+
+	PC :         
+		ProgramCounter   port map(reset, clock, PCMuxOut, PCout);
+
+	PCAdder:     
+		adder_subtracter  port map(PCout,  "00000000000000000000000000000100", '0', PCAdderOut, PCAddco);
+
+	Branchadder: 
+		adder_subtracter port map(PCout, ImmGenOut, '0', BranchAddOut, BranchAddCarry);
+
+	PCmux:       
+		BusMux2To1       port map(BNEout, PCAdderOut,  BranchAddOut, PCMuxOut);	
+
+	IM :         
+		InstructionRAM   port map(reset, clock, PCOut(31 downto 2), IMOUT);
+
+	CTRL :       
+		Control          port map(clock, IMOUT(6 downto 0), IMOUT(14 downto 12), IMOUT(31 downto 25), BranchCTRL, MemReadCTRL, MemToRegCTRL, ALUCTRLCTRL, MemWriteCTRL, ALUSrcCTRL, RegWriteCTRL, ImmGenCTRL);
+
+	Reg32 :      
+		Registers        port map(IMOUT(19 downto 15), IMOUT(24 downto 20), IMOUT(11 downto 7), MeMuxOut, RegWriteCTRL, RegDat1, RegDat2);
+
+	RegMux:      
+		BusMux2To1       port map(ALUSrcCTRL, RegDat2, ImmGenOut, Mux2ALU);
+
+	TheALU :     
+		ALU              port map(RegDat1, Mux2ALU, ALUCTRLCTRL, ALUZero, ALUOut);
+
+	Acct30bit <= "0000" & ALUOUT(27 downto 2);
+	
+	DMEM :       
+		RAM              port map(reset, clock, MemReadCTRL, MemWriteCTRL, Acct30bit, RegDat2, MemReadOut);
+
+	MeMux :      
+		BusMux2To1       port map(MemToRegCTRL, ALUOut, MemReadOut, MeMuxOut);
+
+	with ImmGenCTRL & IMOUT(31) select
+	ImmGenOut <=   "111111111111111111111" & IMOUT(30 downto 20) when "001",  
+                       "000000000000000000000" & IMOUT(30 downto 20) when "000",  
+		       "111111111111111111111" & IMOUT(30 downto 25) & IMOUT(11 downto 7) when "011",  
+                       "000000000000000000000" & IMOUT(30 downto 25) & IMOUT(11 downto 7) when "010", 
+		        "11111111111111111111" & IMOUT(7) & IMOUT(30 downto 25) & IMOUT(11 downto 8) & '0' when "101", 
+                        "00000000000000000000" & IMOUT(7) & IMOUT(30 downto 25) & IMOUT(11 downto 8) & '0' when "100",
+			"1" & IMOUT(30 downto 12) & "000000000000" when "111", 
+                        "0" & IMOUT(30 downto 12) & "000000000000" when "110", 
+          		"ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ" when others;
+
+	with BranchCTRL & ALUZero select
+	BNEOut <=   '1' when "101",
+                         '1' when "010",
+		         '0' when others;
+ 
+
 end holistic;
+
+
 
